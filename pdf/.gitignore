@@ -10,7 +10,7 @@ thuthesis-ctan/
 dtx-style.sty
 thuthesis.cls
 thuthesis.pdf
-thuthesis-example.pdf
+# thuthesis-example.pdf
 spine.pdf
 *.hd
 

@@ -1,0 +1,55 @@
+\input{regression-test.tex}
+\documentclass[degree=doctor]{thuthesis}
+
+\usepackage{natbib}
+\bibliographystyle{thuthesis-author-year}
+
+\pagestyle{empty}
+
+\begin{document}
+\START
+\showoutput
+
+Citation \cite{crane1972invisible} test\par
+Citation \cite{baker1995future} test\par
+Citation \cite{jha2004effect} test\par
+
+Citation \citet{baker1995future} test\par
+Citation \citet[42]{baker1995future} test\par
+Citation \citep{baker1995future} test\par
+Citation \citep[42]{baker1995future} test\par
+Citation \citep[see][]{baker1995future} test\par
+Citation \citep[see][42]{baker1995future} test\par
+Citation \citet*{baker1995future} test\par
+Citation \citep*{baker1995future} test\par
+
+引用\citet{wangbing1997dianzi}测试\par
+引用\citet[42]{wangbing1997dianzi}测试\par
+引用\citep{wangbing1997dianzi}测试\par
+引用\citep[42]{wangbing1997dianzi}测试\par
+引用\citep[见][]{wangbing1997dianzi}测试\par
+引用\citep[见][42]{wangbing1997dianzi}测试\par
+引用\citet*{wangbing1997dianzi}测试\par
+引用\citep*{wangbing1997dianzi}测试\par
+
+Citation \citealt{baker1995future} Test\par
+Citation \citealt*{baker1995future} Test\par
+Citation \citealp{baker1995future} Test\par
+Citation \citealp*{baker1995future} Test\par
+Citation \citealp{baker1995future,crane1972invisible} Test\par
+Citation \citealp[42]{baker1995future} Test\par
+Citation \citenum{baker1995future} Test\par
+Citation \citetext{priv.\ comm.} Test\par
+
+Citation \citeauthor{jha2004effect} Test\par
+Citation \citeauthor*{jha2004effect} Test\par
+Citation \citeyear{jha2004effect} Test\par
+Citation \citeyearpar{jha2004effect} Test\par
+
+\nocite{*}
+
+\bibliography{refs-author-year}
+
+\clearpage
+\OMIT
+\end{document}

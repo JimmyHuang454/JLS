@@ -1,0 +1,37 @@
+\input{regression-test.tex}
+\documentclass[degree=doctor]{thuthesis}
+
+\usepackage[style=thuthesis-bachelor]{biblatex}
+\addbibresource{refs-bachelor.bib}
+
+\pagestyle{empty}
+
+\begin{document}
+\START
+\showoutput
+
+引用\citet{chendengyuan2000guoshi}测试\par
+引用\citet[42]{chendengyuan2000guoshi}测试\par
+引用\citep{chendengyuan2000guoshi}测试\par
+引用\citep[42]{chendengyuan2000guoshi}测试\par
+引用\citep[见][]{woerdelun2012jingji}测试\par
+引用\citep[见][42]{woerdelun2012jingji}测试\par
+
+Citation \citet{crawford1995future} test\par
+Citation \citet[42]{crawford1995future} test\par
+Citation\citep{crawford1995future} test\par
+Citation\citep[42]{crawford1995future} test\par
+Citation \citep[see][]{crawford1995future} test\par
+Citation \citep[see][42]{crawford1995future} test\par
+
+引用\citep{chendengyuan2000guoshi}测试\par
+引用\citep{woerdelun2012jingji,crawford1995future}测试\par
+引用\citep{chenggenwei1999hongshui,weinstein1974pathogenic,zhonghua1984linchuang}测试\par
+
+\nocite{*}
+
+\printbibliography
+
+\clearpage
+\OMIT
+\end{document}

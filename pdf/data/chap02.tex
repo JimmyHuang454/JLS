@@ -1,0 +1,103 @@
+% !TeX root = ../thuthesis-example.tex
+
+\chapter{Specification V1}
+本章描述了 JLS 协议第 1 版的具体内容（不含正确性和安全性验证），另付一个基于 dart 编程语言的具体实现。
+
+\section{约定}
+\begin{itemize}
+	\item 数组相加有先后顺序，如无特殊标注，一律以大端字节序存储
+	\item 如无特殊标注，本文所指TLS均为TLS版本1.3
+\end{itemize}
+
+\section{背景}
+
+对代理协议内容加密和认证是一项广泛的需求，基于应用层的代理协议如 HTTP、SOCK5 等都不支持内容加密\footnote{虽然有认证，但形同虚设}，因此出现了如 ShadowSocket 等加密代理协议，随着 TLS 的广泛应用，为了解决维护难、缺少安全性验证、主动探测等问题，又出现了以 TLS 为基础的协议，如 Trojan 协议。
+
+Trojan 可以说是一个完美的协议，但必须要求购买域名，申请域名证书。在某些极端环境，仅允许特定域名通行，Trojan 失效。但预估 IP 白名单模式\footnote{仅限指定IP通行的模式}很快来临，届时我们只能祈祷。
+
+
+\section{基本原理}
+
+首先考虑一个简化模型：
+现有一个客户端、一个服务端和一个仅双方知道的一个密码PWD；如何保证：\newline
+\begin{itemize}
+	\item 1. 客户端和服务端之间的数据原文没被篡改
+	\item 2. 不能被除了客户端和服务端以外的第三方解密
+	\item 3. 客户端（服务端）能够识别接收到的数据是否真的来自服务端（客户端）
+	\item 4. 收到的通讯数据是否已经接收过（即防止重放攻击）\newline
+\end{itemize}
+
+为了实现第 1、2 、3 点，可以采用 AES-GCM 对称加密算法；AES 保证了第 2 点，GCM 保证了第 1 和第 3 点；
+
+为了实现第 4 点，我们可以在 AES-GCM 的基础上往数据原文中加上一个时间戳，但是这种方式有延迟，比如说 vmess 协议，只要攻击速度够快，90 秒内可以无限让客户端或者服务端重复接收已经接收过的数据。
+
+还有一种方法是让客户端和服务端之间进行一次握手，客户端先生成一个随机数 N1，通过 AES-GCM 加密发送 N1，服务端接收后可以解密出来，再生成一个随机数 N2，同样地加密发送给客户端；
+
+完成握手后，就约定以后发送的数据的秘钥都是N=N1+N2+PWD，而且每发一个数据包都要在原文中附上序号（第一个包、第二包……第 x 个包）。这种会增加一次 RTT，但我们可以稍微修改一下 TLS 协议，把其中的随机数（random）换成我们给出的随机数 N1 和 N2，达到交换随机数的目的。
+
+这种方法没有延迟，两个随机数共同组成本次对话的ID，所以该随机数应该要足够随机才能保证能防止重放攻击（Replay Attacks）。
+
+根据 GCM 的认证功能，如果不知道 PWD，就无法解出密文，所以我们就可以检测出客户端/服务端是否假冒，从而把数据转发到我们想要的任何地址。
+
+但为了避免服务器被探测到，只能支持全程加密的 TLS1.3；同样的，如果服务端检测到不是 TLS1.3，直接转发数据，不作处理。
+
+
+
+\section{准备}
+Client 和 Server 都必须准备一个仅双方知道的密码 PWD 和一个随机数 IV。PWD和IV长度无限制，但都不应该小于 32 字节并应该足够随机。
+
+Server 端必须准备一个伪装站（Fallback Website）地址，伪装站应该优先选取延迟低的、使用 TLS 的、使用 HTTP2 的、不能是HTTP3、DDOS 防御没那么敏感的。
+
+\section{Handshake（握手）}
+JLS的握手包跟TLS所规定的数据结构和时序完全一致。
+
+\subsection{Client Hello 包}
+功能：向服务器发送建立安全信道的请求
+
+\begin{itemize}
+	\item 如果 Client 支持 TLS1.3，那么在 Client Hello 的supported\_version拓展必须包含TLS1.3字段。JLS 是建立在 TLS1.3的基础上，所以 JLS 的 Client Hello 包必须要有此字段
+
+	\item Client Hello 中的random字段，必须是代码\ref{list:clientFakeRondom}所生成的FakeRandom，通过代码\ref{list:clientFakeRondom}还会生成一个随机数 N1，N1 必须要足够随机，用于防止已知明文攻击（Known Plaintext Attack）
+
+	\item Client Hello 中的session ID字段，应该是随机的
+
+	\item 根据 TLS，Client Hello 包必须包含pre\_shared\_key字段和交换秘钥所用算法。Client 必须自行生成正确的pre\_shared\_key和所用算法（即supported\_groups）发送给 Server
+
+	\item 开发者可以在不修改或缺少 JLS 必要信息的情况下伪造Client Hello头特征，比如说 chrome浏览器的cipher suits列表等，用于伪造 Client Hello 指纹。需要特别注意的是：如果开发者错误地伪造 Client Hello，也就是JLS能够正常使用，但 TLS 不能使用的情况下，会导致明显的特征，比如说 Client Hello 缺少了cipher suits等必要信息，TLS Server 应该发送 HelloRetryRequest，但JLS 认为这是合法 Client，所以是不会发送 HelloRetryRequest
+	\item Client Hello 不应该使用early data，虽然可以做到 0-RTT，但是会导致重放攻击等安全问题
+\end{itemize}
+
+\lstinputlisting[caption=生成Client Hello,label={list:clientFakeRondom}] {data/code/build_client_hello.java}
+
+
+\subsection{Server 验证}
+功能：验证收到的握手是否来自有效的Client
+\begin{itemize}
+	\item 如果Client Hello不支持tls1.3，视为非法Client
+	\item Server 必须通过算法\ref{list:serverCheckClientHello}判断是否为有效 Client
+	\item 如果不是有效 Client，直接把接收到的所有数据转发到伪装站，不作其他处理
+	\item Server FakeRandom的后8字节不能是\[ 44,4F,57,4E,47,52,44,01 \]和\[ 44,4F,57,4E,47,52,44,00 \]，如果是，应该不断重新生成一个Server FakeRandom ，直到合规后再发送 Server Hello
+\end{itemize}
+\lstinputlisting[caption=检查是否有效Client,label={list:serverCheckClientHello}] {data/code/server_check_client_hello.java}
+
+\subsection{发送Server Hello和证书}
+功能：发送Server Hello，并发送伪装站证书
+\begin{itemize}
+	\item 首先要确认是否有效Client，然后通过算法\ref{list:buildServerHello}生成Server Hello.
+	\item 如果是有效 Client，则可以得出来自Client的随机数N1，然后Server要生成自己的随机数N2和Server FakeRandom
+	\item Server 必须要根据Client的pre\_shared\_key和supported\_groups得出共同秘钥S1，并把S1也作为最终秘钥之一来加密数据，以保证前向安全性
+	\item 因为 Server 已经验证了 Client 的有效性，所以 Server 证书可以传输随意内容，但包长度应该要伪装站返回的证书一致，建议开发者在软件初始化时获取伪装站的真实证书包；为了方便，返回差不多长度的 Server 证书包也是被允许的，因为这不会影响安全性，但可能成为特征；Client 无需验证该证书是否有效
+\end{itemize}
+\lstinputlisting[caption=生成Server Hello,label={list:buildServerHello}] {data/code/build_server_hello.java}
+
+\subsection{Client 验证}
+功能：验证是否有效Server
+\begin{itemize}
+	\item 根据算法\ref{list:checkServer}得出验证是否有效Server，并且得出共同秘钥S1。如果不是有效 Server，则 Client 完全按照 TLS1.3 流程处理，即验证证书，并协商出 TLS 最终随机数（秘钥），最后发送合规的 http 请求即可
+	\item 如果是有效 Server，则无需验证来自 Server 的证书。
+\end{itemize}
+\lstinputlisting[caption=验证 server,label={list:checkServer}] {data/code/client_check_server.java}
+
+\section{Application Data}
+使用经过handshake得出的秘钥N，通过AES\_GCM\_256加密发送数据。包结构与TLS一致。
+Server和Client都必须各自维护一个自增ID，用于记录已接收和已发送包数量。目前的GCM的MAC的长度为默认的16字节，每一个 Application Data 都必须在密文后加上MAC。

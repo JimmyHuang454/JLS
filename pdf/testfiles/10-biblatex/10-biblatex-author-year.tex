@@ -1,0 +1,41 @@
+\input{regression-test.tex}
+\documentclass[degree=doctor]{thuthesis}
+
+\usepackage[style=thuthesis-author-year]{biblatex}
+\addbibresource{refs-author-year.bib}
+
+\pagestyle{empty}
+
+\begin{document}
+\START
+\showoutput
+
+Citation \cite{crane1972invisible} test\par
+Citation \cite{baker1995future} test\par
+Citation \cite{jha2004effect} test\par
+
+Citation \citet{baker1995future} test\par
+Citation \citet[42]{baker1995future} test\par
+Citation \citep{baker1995future} test\par
+Citation \citep[42]{baker1995future} test\par
+Citation \citep[see][]{baker1995future} test\par
+Citation \citep[see][42]{baker1995future} test\par
+Citation \citet*{baker1995future} test\par
+Citation \citep*{baker1995future} test\par
+
+引用\citet{wangbing1997dianzi}测试\par
+引用\citet[42]{wangbing1997dianzi}测试\par
+引用\citep{wangbing1997dianzi}测试\par
+引用\citep[42]{wangbing1997dianzi}测试\par
+引用\citep[见][]{wangbing1997dianzi}测试\par
+引用\citep[见][42]{wangbing1997dianzi}测试\par
+引用\citet*{wangbing1997dianzi}测试\par
+引用\citep*{wangbing1997dianzi}测试\par
+
+\nocite{*}
+
+\printbibliography
+
+\clearpage
+\OMIT
+\end{document}

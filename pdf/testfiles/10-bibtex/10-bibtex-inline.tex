@@ -1,0 +1,41 @@
+\input{regression-test.tex}
+\documentclass[degree=doctor]{thuthesis}
+
+\usepackage[sort]{natbib}
+\bibliographystyle{thuthesis-numeric}
+
+\thusetup{
+  cite-style = inline,
+}
+
+\pagestyle{empty}
+
+\begin{document}
+\START
+\showoutput
+
+引用\citet{zhangkun1994}测试\par
+引用\citet[42]{zhangkun1994}测试\par
+引用\citep{zhangkun1994}测试\par
+引用\citep[42]{zhangkun1994}测试\par
+引用\citep[见][]{zhukezhen1973}测试\par
+引用\citep[见][42]{zhukezhen1973}测试\par
+
+Citation \citet{dupont1974bone} test\par
+Citation \citet[42]{dupont1974bone} test\par
+Citation \citep{dupont1974bone} test\par
+Citation \citep[42]{dupont1974bone} test\par
+Citation \citep[see][]{zhengkaiqing1987} test\par
+Citation \citep[see][42]{zhengkaiqing1987} test\par
+
+引用\citep{zhangkun1994}测试\par
+引用\citep{zhukezhen1973,dupont1974bone}测试\par
+引用\citep{zhengkaiqing1987,jiangxizhou1980,jianduju1994}测试\par
+
+\nocite{*}
+
+\bibliography{refs-numeric}
+
+\clearpage
+\OMIT
+\end{document}

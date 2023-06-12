@@ -1,0 +1,36 @@
+\input{regression-test.tex}
+\documentclass[degree=doctor]{thuthesis}
+
+\usepackage[
+  bibstyle  = thuthesis-numeric,
+  citestyle = thuthesis-inline,
+]{biblatex}
+\addbibresource{refs-numeric.bib}
+
+\pagestyle{empty}
+
+\begin{document}
+\START
+\showoutput
+
+引用\cite{zhangkun1994}测试\par
+引用\cite[42]{zhangkun1994}测试\par
+引用\cite[见][]{zhukezhen1973}测试\par
+引用\cite[见][42]{zhukezhen1973}测试\par
+
+Citation \cite{dupont1974bone} test\par
+Citation \cite[42]{dupont1974bone} test\par
+Citation \cite[see][]{zhengkaiqing1987} test\par
+Citation \cite[see][42]{zhengkaiqing1987} test\par
+
+引用\cite{zhangkun1994}测试\par
+引用\cite{zhukezhen1973,dupont1974bone}测试\par
+引用\cite{zhengkaiqing1987,jiangxizhou1980,jianduju1994}测试\par
+
+\nocite{*}
+
+\printbibliography
+
+\clearpage
+\OMIT
+\end{document}

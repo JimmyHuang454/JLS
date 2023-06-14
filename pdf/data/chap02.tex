@@ -61,10 +61,13 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 
 	\item Client Hello 中的session ID字段，应该是随机的
 
-	\item 根据 TLS，Client Hello 包必须包含key\_share字段和交换秘钥所用算法。Client 必须自行生成正确的key\_share和所用算法（即supported\_groups）发送给 Server
+	\item Client Hello 包必须包含key\_share字段和交换秘钥所用算法。Client 必须自行生成正确的key\_share和所用算法（即supported\_groups）发送给 Server
 
 	\item 开发者可以在不修改或缺少 JLS 必要信息的情况下伪造Client Hello头特征，比如说 chrome浏览器的cipher suits列表等，用于伪造 Client Hello 指纹。需要特别注意的是：如果开发者错误地伪造 Client Hello，也就是JLS能够正常使用，但 TLS 不能使用的情况下，会导致明显的特征，比如说 Client Hello 缺少了cipher suits等必要信息，TLS Server 应该发送 HelloRetryRequest，但JLS 认为这是合法 Client，所以是不会发送 HelloRetryRequest
-	\item Client Hello 不应该使用early data，虽然可以做到 0-RTT，但是会导致重放攻击等安全问题
+
+	\item Client Hello 不应该使用early data或pre\_shared\_key，虽然可以做到 0-RTT，但是会导致重放攻击等安全问题
+
+	\item 使用padding extension 是为了希望避免发送长度为256\~511字节的client hello，因为有不少TLS server拒绝接收长度小于512字节的client hello，因此开发者在伪装client hello 时，应该尽可能使用长度（不含server\_name扩展）大于512字节的client hello
 \end{itemize}
 
 \lstinputlisting[caption=生成Client Hello,label={list:clientFakeRondom}] {data/code/build_client_hello.java}
@@ -73,10 +76,12 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 \subsection{Server 验证}
 功能：验证收到的握手是否来自有效的Client
 \begin{itemize}
-	\item 如果Client Hello不支持TLS1.3，视为非法Client
 	\item Server 必须通过算法\ref{list:serverCheckClientHello}判断是否为有效 Client
+
 	\item 如果不是有效 Client，直接把接收到的所有数据转发到伪装站，不作其他处理
+
 	\item Server FakeRandom的后8字节不能是\[ 44,4F,57,4E,47,52,44,01 \]和\[ 44,4F,57,4E,47,52,44,00 \]，如果是，应该不断重新生成一个Server FakeRandom ，直到合规后再发送 Server Hello
+
 \end{itemize}
 \lstinputlisting[caption=检查是否有效Client,label={list:serverCheckClientHello}] {data/code/server_check_client_hello.java}
 
@@ -84,9 +89,13 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 功能：发送Server Hello，并发送伪装站证书
 \begin{itemize}
 	\item 首先要确认是否有效Client，然后通过算法\ref{list:buildServerHello}生成Server Hello.
+
 	\item 如果是有效 Client，则可以得出来自Client的随机数N1，然后Server要生成自己的随机数N2和Server FakeRandom
+
 	\item Server 必须要根据Client的key\_share和supported\_groups得出共同秘钥S1，并把S1也作为最终秘钥之一来加密数据，以保证前向安全性
+
 	\item 因为 Server 已经验证了 Client 的有效性，所以 Server 证书可以传输随意内容，但包长度应该要伪装站返回的证书一致，建议开发者在软件初始化时获取伪装站的真实证书包；为了方便，返回差不多长度的 Server 证书包也是被允许的，因为这不会影响安全性，但可能成为特征；Client 无需验证该证书是否有效
+
 	\item Session ID应与Client Hello中的一致
 \end{itemize}
 \lstinputlisting[caption=生成Server Hello,label={list:buildServerHello}] {data/code/build_server_hello.java}
@@ -95,6 +104,7 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 功能：验证是否有效Server
 \begin{itemize}
 	\item 根据算法\ref{list:checkServer}得出验证是否有效Server，并且得出共同秘钥S1。如果不是有效 Server，则 Client 完全按照 TLS1.3 流程处理，即验证证书，并协商出 TLS 最终随机数（秘钥），最后发送合规的 http 请求即可
+
 	\item 如果是有效 Server，则无需验证来自 Server 的证书。
 \end{itemize}
 \lstinputlisting[caption=验证 server,label={list:checkServer}] {data/code/client_check_server.java}

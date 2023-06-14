@@ -9,13 +9,10 @@ bool, bytes parseFakeRandom(clientFakeRandom, iv, pwd){
 }
 
 bool serverCheck(clientHello){
-  if (!isTLS1_3(clientHello)) {
-    return false;
-  }
-
   clientFakeRandom = clientHello['random'];
   // 32字节全置为0
   clientHello['random'] = 0;
+  // 防止Client Hello被修改
   iv = utf8.encode(userIV) + clientHello;
   pwd = utf8.encode(userPwd);
 

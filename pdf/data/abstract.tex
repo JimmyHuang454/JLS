@@ -3,7 +3,7 @@
 % 中英文摘要和关键字
 
 \begin{abstract}
-	本协议基于AES-GCM和ECDH实现了类似TSL1.3协议的功能，在仅两方知道密码又不要求证书的情况下，仅需 1-RTT 做到内容安全、端点可靠认证，无法通过主动探测、重放攻击、机器学习等方法区分本协议与真实TLS1.3。并且为了提高机器和网络性能，在不影响安全的前提下，可以选择性地加密和使用网络多路复用。
+	本协议基于AES-GCM和x25519实现了类似TSL1.3协议的功能，在仅两方知道密码又不要求证书的情况下，仅需 1-RTT 做到内容安全、端点可靠认证，无法通过主动探测、重放攻击、机器学习等方法区分本协议与真实TLS1.3。并且为了提高机器和网络性能，在不影响安全的前提下，可以选择性地加密和使用网络多路复用。
 
 	% 关键词用“英文逗号”分隔，输出时会自动处理为正确的分隔符
 	\thusetup{
@@ -12,7 +12,7 @@
 \end{abstract}
 
 \begin{abstract*}
-	This protocol implements functions similar to TSL1.3 protocol based on AES-GCM and ECDH. When only two parties know the password and do not require a certificate, only 1-RTT is required to achieve content security and reliable endpoint authentication. It is impossible to distinguish this protocol from real TLS1.3 through active detection, Replay attack, machine learning and other methods. And in order to improve machine and network performance, selective encryption and network multiplexing can be used without affecting security.
+	This protocol implements functions similar to TSL1.3 protocol based on AES-GCM and x25519. When only two parties know the password and do not require a certificate, only 1-RTT is required to achieve content security and reliable endpoint authentication. It is impossible to distinguish this protocol from real TLS1.3 through active detection, Replay attack, machine learning and other methods. And in order to improve machine and network performance, selective encryption and network multiplexing can be used without affecting security.
 
 	% Use comma as separator when inputting
 	\thusetup{

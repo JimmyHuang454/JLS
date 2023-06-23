@@ -1,12 +1,12 @@
 % !TeX root = ../thuthesis-example.tex
 
 \chapter{Specification V1}
-本章描述了 JLS 协议第 1 版的具体内容（不含正确性和安全性验证），另付一个基于 dart 编程语言的具体实现。
+本章描述了 JLS 协议第 1 版的具体内容（不含正确性和安全性验证），另付一个基于 Dart 编程语言的具体实现。
 
 \section{约定}
 \begin{itemize}
 	\item 数组相加有先后顺序，如无特殊标注，一律以大端字节序存储
-	\item 如无特殊标注，本文所指TLS均为TLS版本1.3
+	\item 如无特殊标注，本文所指TLS均为TLS版本1.3\cite{rescorla2018transport}
 \end{itemize}
 
 \section{背景}
@@ -67,7 +67,7 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 
 	\item Client Hello 不应该使用early data或pre\_shared\_key，虽然可以做到 0-RTT，但是会导致重放攻击等安全问题
 
-	\item 使用padding extension 是为了希望避免发送长度为256\~511字节的client hello，因为有不少TLS server拒绝接收长度小于512字节的client hello，因此开发者在伪装client hello 时，应该尽可能使用长度（不含server\_name扩展）大于512字节的client hello
+	\item 使用padding extension 是为了希望避免发送长度为256\~511字节的client hello\cite{langley2015rfc}，因为有不少TLS server拒绝接收长度小于512字节的client hello，因此开发者在伪装client hello 时，应该尽可能使用长度（不含server\_name扩展）大于512字节的client hello
 \end{itemize}
 
 \lstinputlisting[caption=生成Client Hello,label={list:clientFakeRondom}] {data/code/build_client_hello.java}
@@ -97,6 +97,7 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 	\item 因为 Server 已经验证了 Client 的有效性，所以 Server 证书可以传输随意内容，但包长度应该要伪装站返回的证书一致，建议开发者在软件初始化时获取伪装站的真实证书包；为了方便，返回差不多长度的 Server 证书包也是被允许的，因为这不会影响安全性，但可能成为特征；Client 无需验证该证书是否有效
 
 	\item Session ID应与Client Hello中的一致
+	\item support\_group 应只使用 x25519
 \end{itemize}
 \lstinputlisting[caption=生成Server Hello,label={list:buildServerHello}] {data/code/build_server_hello.java}
 
@@ -110,6 +111,18 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 \lstinputlisting[caption=验证 server,label={list:checkServer}] {data/code/client_check_server.java}
 
 \section{Application Data}
-使用经过Handshake得出的秘钥N = S1 + PWD，通过AES\_GCM\_256加密发送数据。包结构与TLS一致。
-Server和Client都必须各自维护一个自增ID，用于记录已接收和已发送包数量，按照算法\ref{list:encryptData}得出实际发送数据。目前GCM的MAC的长度为默认的16字节，每一个 Application Data 都必须在密文后加上MAC。
+使用经过x25519算法得出共享密钥S1，最后得出的秘钥finalPWD = PWD + S1 + N1 + N2，通过AES\_GCM\_256加密发送数据。包结构与TLS一致。
+Server和Client都必须各自维护一个自增ID，用于记录已接收和已发送包数量，按照算法\ref{list:encryptData}得出实际发送数据。目前GCM的MAC的长度为默认的16字节，每一个 Application Data 都必须在密文前加上MAC。如果Client或Server收到验证失败的Application data，必要按照正常TLS流程处理。
 \lstinputlisting[caption=加密数据,label={list:encryptData}] {data/code/data_encrypt.java}
+
+\lstinputlisting[caption=解密数据,label={list:decryptData}] {data/code/data_decrypt.java}
+
+\section{Dart编程语言实现}
+RRS 是一个Trojan和JLS的具体实现。详见地址：
+
+https://github.com/JimmyHuang454/RRS/tree/master/lib/transport/jls
+
+\section{节点分享格式}
+示例：
+\lstinputlisting[caption=分享格式,label={list:share}] {data/code/share.json}
+

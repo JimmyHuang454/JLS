@@ -1,0 +1,14 @@
+// 全小写
+[
+  {
+    "tag": "node 1", // 选填，自定义名字
+    "address": "jls.github.com", // 必填，地址
+    "port": 443, // 必填，端口
+    "sni": "jls.github.com", // 选填，server name 所用域名
+    "password": "sou7230894hfksadjhfosdf", // 必填，随机密码
+    "transport": "tcp", // 选填，默认TCP
+    "timeout": 10, // 选填，默认10秒
+    "fingerprint": "", // 选填,留空由软件随机选择
+    "random": "2345kjgku2345234kj235kj23h4" // 必填，随机数
+  }
+]

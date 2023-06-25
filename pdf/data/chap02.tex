@@ -57,7 +57,7 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 \begin{itemize}
 	\item 如果 Client 支持 TLS1.3，那么在 Client Hello 的supported\_version拓展必须包含TLS1.3字段。JLS 是建立在 TLS1.3的基础上，所以 JLS 的 Client Hello 包必须要有此字段
 
-	\item Client Hello 中的random字段，必须通过算法\ref{list:clientFakeRondom}所生成的FakeRandom，通过代码\ref{list:clientFakeRondom}还会生成一个随机数 N1，N1 必须要足够随机，用于防止已知明文攻击（Known Plaintext Attack）
+	\item Client Hello 中的random字段，必须是通过算法\ref{list:clientFakeRondom}所生成的FakeRandom，通过代码\ref{list:clientFakeRondom}还会生成一个随机数 N1，N1 必须要足够随机，用于防止已知明文攻击（Known Plaintext Attack）
 
 	\item Client Hello 中的session ID字段，应该是随机的
 
@@ -67,7 +67,7 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 
 	\item Client Hello 不应该使用early data或pre\_shared\_key，虽然可以做到 0-RTT，但是会导致重放攻击等安全问题
 
-	\item 使用padding extension 是为了希望避免发送长度为256\~511字节的client hello\cite{langley2015rfc}，因为有不少TLS server拒绝接收长度小于512字节的client hello，因此开发者在伪装client hello 时，应该尽可能使用长度（不含server\_name扩展）大于512字节的client hello
+	\item 使用padding extension 是为了希望避免发送长度为256-511字节的Client hello\cite{langley2015rfc}，因为有不少TLS server拒绝接收长度小于512字节的Client hello，因此开发者在伪装Client hello 时，应该尽可能使用长度（不含server\_name扩展）大于512字节的Client hello
 \end{itemize}
 
 \lstinputlisting[caption=生成Client Hello,label={list:clientFakeRondom}] {data/code/build_client_hello.java}

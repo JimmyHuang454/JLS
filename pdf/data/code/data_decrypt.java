@@ -6,11 +6,15 @@ pwd = sha256.convert(utf8.encode(userPWD) + S1 + N1 + N2);
 // 应与加密中的sendCount相同
 receiveCount = 0;
 
-bytes encrypt(data) {
+bool, bytes encrypt(data) {
   packetIV = sha512.convert(iv + receiveCount);
   mac = data[0:16]; // 前16字节
   cipherText = date[16:];
-  mac, plainText = AES_GCM_256.decrypt(cipherText, pwd, packetIV, mac);
-  receiveCount += 1;
-  return plainText;
+  isValid, plainText = AES_GCM_256.decrypt(cipherText, pwd, packetIV, mac);
+  if (isValid) {
+    receiveCount += 1;
+  }else{
+    plainText = [];
+  }
+  return isValid, plainText;
 }

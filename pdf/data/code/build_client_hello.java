@@ -18,7 +18,7 @@ bytes buildClientHello() {
   // 由于未生成fakeRandom，
   // 所以此时clientHello中的random 32 字节应该全部填充为0
   clientHello['random'] = 0
-  clientHello['pre_shared_key'] = buildDH();
+  clientHello['shared_key'] = buildDH();
   iv = utf8.encode(userIV) + clientHello;
 
   clientFakeRandom, N1 = buildFakeRandom(iv, utf8.encode(userPwd));

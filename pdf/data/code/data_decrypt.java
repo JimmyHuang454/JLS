@@ -10,7 +10,7 @@ bytes encrypt(data) {
   packetIV = sha512.convert(iv + receiveCount);
   mac = data[0:16]; // 前16字节
   cipherText = date[16:];
-  mac, cipherText = AES_GCM_256.decrypt(cipherText, pwd, packetIV, mac);
+  mac, plainText = AES_GCM_256.decrypt(cipherText, pwd, packetIV, mac);
   receiveCount += 1;
   return plainText;
 }

@@ -3,13 +3,14 @@ iv = utf8.encode(userIV);
 pwd = sha256.convert(utf8.encode(userPWD) + S1 + N1 + N2);
 
 // 从0开始，8字节大端存储
-sendCount = 0;
+// 应与加密中的sendCount相同
+receiveCount = 0;
 
 bytes encrypt(data) {
-  packetIV = sha512.convert(iv + receiveID);
+  packetIV = sha512.convert(iv + receiveCount);
   mac = data[0:16]; // 前16字节
   cipherText = date[16:];
   mac, cipherText = AES_GCM_256.decrypt(cipherText, pwd, packetIV, mac);
-  receiveID += 1;
+  receiveCount += 1;
   return plainText;
 }

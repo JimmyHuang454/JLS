@@ -3,7 +3,7 @@ bytes handleDH(clientHello) {
   serverKeyPair = newServerKeyPair;
   sharedSecretKey = algorithm.sharedSecretKey(
         keyPair: serverKeyPair,
-        remotePublicKey: clientHello['pre_shared_key'],
+        remotePublicKey: clientHello['shared_key'],
       );
   return serverKeyPair.publicKey, sharedSecretKey;
 }
@@ -14,7 +14,7 @@ bytes buildServerHello(clientHello) {
     return;
   }
   serverPublicKey, S1 = handleDH(clientHello);
-  serverHello['pre_shared_key'] = serverPublicKey;
+  serverHello['shared_key'] = serverPublicKey;
 
   // 此时 serverHello 中的 random
   // 也同样全置为0

@@ -1,5 +1,5 @@
-iv = utf8.encode(userIV);
-pwd = sha256.convert(utf8.encode(userPWD) + S1 + N1 + N2);
+iv = utf8.encode(userIV) + N1 + N2;
+pwd = sha256.convert(utf8.encode(userPWD) + S1);
 
 // 从0开始，8字节大端存储
 sendCount = 0;

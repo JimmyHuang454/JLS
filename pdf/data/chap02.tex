@@ -113,7 +113,7 @@ JLS的握手包跟TLS所规定的数据结构和时序完全一致。
 \lstinputlisting[caption=验证 server,label={list:checkServer}] {data/code/client_check_server.java}
 
 \section{Application Data}
-使用经过x25519算法得出共享密钥S1，最后得出的秘钥finalPWD = PWD + S1 + N1 + N2，通过AES\_GCM\_256加密发送数据。包结构与TLS一致。
+使用经过x25519算法得出共享密钥S1，最后得出的秘钥finalPWD = PWD + S1，通过AES\_GCM\_256加密发送数据。包结构与TLS一致。
 Server和Client都必须各自维护一个自增ID，用于记录已接收和已发送包数量，按照算法\ref{list:encryptData}得出实际发送数据。目前GCM的MAC的长度为默认的16字节，每一个 Application Data 都必须在密文前加上MAC。如果Client或Server收到验证失败的Application data，必要按照正常TLS流程处理。
 \lstinputlisting[caption=加密数据,label={list:encryptData}] {data/code/data_encrypt.java}
 

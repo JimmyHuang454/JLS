@@ -10,7 +10,7 @@ receiveCount = 0;
 bool, bytes encrypt(data) {
   packetIV = sha512.convert(iv + receiveCount);
   cipherText = date[:16];
-  mac = data[16]; // 后16字节
+  mac = data[16:]; // 后16字节
   isValid, plainText = AES_GCM_256.decrypt(cipherText, pwd, packetIV, mac);
   if (isValid) {
     receiveCount += 1;

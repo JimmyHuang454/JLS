@@ -1,7 +1,7 @@
 % !TeX root = ../thuthesis-example.tex
 
-\chapter{Specification V1}
-本章描述了 JLS 协议第 1 版的具体内容（不含正确性和安全性验证），另付一个基于 Dart 编程语言的具体实现。
+\chapter{Specification V2}
+本章描述了 JLS 协议第 2 版的具体内容（不含正确性和安全性验证），另付一个基于 Dart 编程语言的具体实现。
 
 \section{约定}
 \begin{itemize}
@@ -47,6 +47,8 @@ Trojan 可以说是一个完美的协议，但必须要求购买域名，申请�
 Client 和 Server 都必须准备一个仅双方知道的密码 PWD 和一个随机数 IV。PWD和IV长度无限制，但都不应该小于 32 字节并应该足够随机。
 
 Server 端必须准备一个伪装站（Fallback Website）地址，伪装站应该优先选取延迟低的、使用 TLS1.3 的、使用 HTTP2 的、不能是HTTP3、DDOS 防御没那么敏感的。
+
+强烈建议至少每1年更换一次密码和IV，最好每三个月更换一次。
 
 \section{Handshake（握手）}
 JLS的握手包跟TLS所规定的数据结构和时序完全一致。

@@ -8,5 +8,5 @@ bytes,bytes encrypt(data){
   packetIV = sha512.convert(iv + sendCount);
   mac, cipherText = AES_GCM_256.encrypt(data, pwd, packetIV);
   sendCount += 1;
-  return mac + cipherText;
+  return cipherText + mac;
 }

@@ -1,10 +1,15 @@
 % !TeX root = ../thuthesis-example.tex
+\chapter{Specification V3}
+第3个版本跟TLS完全一模一样，除了random字段是特殊生成的。
 
-\chapter{常见问题}
-回答用户可能经常遇到的问题。
+\section{基本原理}
+因为TLS1.3会生成KeyShare来保证此次对话是唯一的。因为random生成时加入了KeyShare，所以攻击者是无法伪装成Client或Server。
 
-\section{JLS安全性如何？}
-JLS充分考虑了各种可能的攻击，如重放攻击，无论是对Client或Server重放，都可以识别出来。身份认证采用带有随机数的AES，而且认证加密内容也是随机的，用于防止已知明文攻击，攻击者必须得出密码和随机数才能正确解密，因此密码长度为32+64字节。即使身份认证被破解了，但还使用ECDH算法，保证了每次对话的密钥都是唯一的。特别注意的是：不应该采用HMAC作为身份认证，因为已知明文的HMAC是非常不安全的。
+\section{random生成算法}
+生成一个随机数N（16字节），然后使用AES\_256 （随机数长度64字节）对其加密。加密时，必须加上各端 KeyShare 的内容，也就说必须要支持TLS1.3。
 
-\section{JLS性能如何？}
-有些用户可能会有这样一个想法：代理的数据本来就已经过一次TLS加密，再加一次AES加密是多此一举，因此可以省略一次加密，以提高加密速度。我们认为这种想法是没必要的，实际上一台非常普通的机器，其AES加密性能至少可达1GB每秒的速度，已满足99\%的用户需求，如果你还疑惑，可用此工具来测试你本地的性能，如果你的网络带宽远不及加密速度，那么就无需担忧AES加密带来的性能问题。
+\section{Server 验证}
+Server 根据收到Client Hello的random来判断是否有效Client，如果不是有效Client，直接转发到伪装站。如果是有效Client，则不需转发到伪装站，使用自签证书，完整按照TLS的流程处理。
+
+\section{Client 验证}
+Client 根据收到的 Server Hello的random来判断是否有效Server，如果不是有效Server，则应表现成一个正常HTTP请求。如果是有效Server，则不需要验证证书是否有效（直接信任），最后按照正常TLS流程处理即可。

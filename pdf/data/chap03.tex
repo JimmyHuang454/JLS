@@ -6,7 +6,7 @@
 因为TLS1.3会生成KeyShare来保证此次对话是唯一的。因为random生成时加入了KeyShare，所以攻击者是无法伪装成Client或Server。
 
 \section{random生成算法}
-生成一个随机数N（16字节），然后使用AES\_256 （随机数长度64字节）对其加密。加密时，必须加上各端 KeyShare 的内容，也就说必须要支持TLS1.3。
+生成一个随机数N（16字节），然后使用AES\_256 对其加密。加密时，先把ClientHello和ServerHello中的random字段的32字节全部置换为0，实际随机数iv=sha512(utf8.encode(userIV) + Hello), 密码pwd=sha256(utf8.encode(userPWD))。后续版本可能会更改pwd的生成算法，因为不建议对同一密码加密超过4G次。
 
 \section{Server 验证}
 Server 根据收到Client Hello的random来判断是否有效Client，如果不是有效Client，直接转发到伪装站。如果是有效Client，则不需转发到伪装站，使用自签证书，完整按照TLS的流程处理。

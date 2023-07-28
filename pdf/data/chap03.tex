@@ -16,7 +16,7 @@
 	\item 附加消息additionalText=null
 \end{itemize}
 
-加密后生成出默认长度为16字节的消息认证码MAC和16字节的密文cipherText，通过拼接 MAC + cipherText 得出32字节的 FakeRandom。
+加密后生成出默认长度为16字节的消息认证码MAC和16字节的密文cipherText，通过拼接 cipherText + MAC 得出32字节的 FakeRandom。
 
 \section{Server 验证}
 Server 根据收到Client Hello的random来判断是否有效Client，如果不是有效Client，直接转发到伪装站。如果是有效Client，则不需转发到伪装站，使用自签证书，完整按照TLS的流程处理。

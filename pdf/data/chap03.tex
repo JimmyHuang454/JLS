@@ -18,6 +18,9 @@
 
 加密后生成出默认长度为16字节的消息认证码MAC和16字节的密文cipherText，通过拼接 cipherText + MAC 得出32字节的 FakeRandom。
 
+\section{PSK处理}
+如果Client Hello包含Pre\_Shared\_Key 拓展，生成FakeRandom 时，Pre\_Shared\_Key应该包含真实的Identity参数，但Binder参数应该全置为0（长度应与真实长度一致）；生成完FakeRandom并填充进Client Hello后，再计算并填入真实Binder，因为Binder会验证实际使用的Client Hello。
+
 \section{Server 验证}
 Server 根据收到Client Hello的random来判断是否有效Client，如果不是有效Client，直接转发到伪装站。如果是有效Client，则不需转发到伪装站，使用自签证书，完整按照TLS的流程处理。
 

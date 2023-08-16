@@ -26,3 +26,9 @@ Server 根据收到Client Hello的random来判断是否有效Client，如果不�
 
 \section{Client 验证}
 Client 根据收到的 Server Hello的random来判断是否有效Server，如果不是有效Server，则应表现成一个正常HTTP请求。如果是有效Server，则不需要验证证书是否有效（直接信任），最后按照正常TLS流程处理即可。
+
+\section{安全建议}
+\begin{itemize}
+	\item 如果开启了0-RTT功能，那么可能遭遇重放攻击
+	\item 如果选取支持0-RTT的伪装网站，相应的，你应该开启0-RTT功能来避免特征，而且如果伪装网站支持Session共享（即不同机器不同IP也接受PSK），那么可能会暴露特征
+\end{itemize}

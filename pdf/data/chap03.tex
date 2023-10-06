@@ -18,6 +18,17 @@
 
 加密后生成出默认长度为16字节的消息认证码MAC和16字节的密文cipherText，通过拼接 cipherText + MAC 得出32字节的 FakeRandom 后填充进 Hello。
 
+因为 random 也带有验证的功能 \cite{rescorla2018transport}，所以生成的FakeRandom的后8字节不能是：
+
+\begin{itemize}
+	\item 44, 4F, 57, 4E, 47, 52, 44, 01
+	\item 44, 4F, 57, 4E, 47, 52, 44, 00
+	\item 07, 9E, 09, E2, C8, A8, 33, 9C
+\end{itemize}
+
+如果是，则必须更新N，重新生成一个 FakeRandom。
+
+
 \section{PSK处理}
 如果Client Hello包含Pre\_Shared\_Key 拓展，生成FakeRandom 时，Pre\_Shared\_Key应该包含真实的Identity参数，但Binder参数应该全置为0（长度应与真实长度一致）；生成完FakeRandom并填充进Client Hello后，再计算并填入真实Binder，因为Binder会验证实际使用的Client Hello。
 
@@ -25,11 +36,16 @@
 Server 根据收到Client Hello的random来判断是否有效Client，如果不是有效Client，直接转发到伪装站。如果是有效Client，则不需转发到伪装站，使用自签证书，完整按照TLS的流程处理。Server 发送的证书可以是任意内容，Client 无需验证该证书是否有效。
 
 \section{Client 验证}
-Client 根据收到的 Server Hello的random来判断是否有效Server，如果不是有效Server，则应表现成一个正常HTTP请求。如果是有效Server，则不需要验证证书是否有效（直接信任），最后按照正常TLS流程处理即可。
+Client 根据收到的 Server Hello 中的 random 来判断是否有效Server，如果无法验证 random，则认为是无效Server。如果是有效Server，则不需要验证证书是否有效（直接信任），按照正常TLS流程处理即可。
 
-\section{安全建议}
+在全部阶段，都不应该出现 "HelloRetryRequest" 类型，如果出现则认为是无效Server。
+
+如果是无效Server，也应正常按照TLS流程处理；如果能验证证书的有效性（非直接信任），建议 TLS 握手后表现成一个正常的HTTP请求。
+
+\section{建议}
 \begin{itemize}
 	\item 如果开启了0-RTT功能，那么可能遭遇重放攻击
 	\item 如果选取支持0-RTT的伪装网站，相应的，你应该开启0-RTT功能来避免特征，而且如果伪装网站支持Session共享（即不同机器不同IP也接受PSK），那么可能会暴露特征
-	\item 最好每三个月更换一次密码，密码长度应该大于64字节
+	\item 最好每三个月更换一次密码，密码和随机数长度应该大于64字节
+	\item 无法同时一起与 ECH\cite{ietf-tls-esni-16} 使用
 \end{itemize}
